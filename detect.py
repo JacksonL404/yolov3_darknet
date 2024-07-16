@@ -73,6 +73,7 @@ def detect(save_img=False):
     # Get names and colors
     names = load_classes(opt.names)
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(names))]
+    # colors = [[0, 255, 0] for _ in range(len(names))]
 
     # Run inference
     t0 = time.time()
@@ -129,6 +130,7 @@ def detect(save_img=False):
                     if save_img or view_img:  # Add bbox to image
                         label = '%s %.2f' % (names[int(cls)], conf)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
+                        # plot_one_box(xyxy, im0, color=colors[int(cls)])
 
             # Print time (inference + NMS)
             print('%sDone. (%.3fs)' % (s, t2 - t1))
@@ -165,11 +167,11 @@ def detect(save_img=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', type=str, default='cfg/yolov3-1cls.cfg', help='*.cfg path')
-    parser.add_argument('--names', type=str, default='data/firetruck.names', help='*.names path')
-    parser.add_argument('--weights', type=str, default='weights/firetruck0617/best.pt', help='weights path')
-    parser.add_argument('--source', type=str, default='0', help='source')  # input file/folder, 0 for webcam
-    parser.add_argument('--output', type=str, default='output', help='output folder')  # output folder
+    parser.add_argument('--cfg', type=str, default='cfg/yolov3-2cls.cfg', help='*.cfg path')
+    parser.add_argument('--names', type=str, default='data/flytest.names', help='*.names path')
+    parser.add_argument('--weights', type=str, default='weights/flytest1080_0710/best.pt', help='weights path')
+    parser.add_argument('--source', type=str, default='D:\GitProjects\yolo_tracking-8.0\datasets/flytest_final', help='source')  # input file/folder, 0 for webcam
+    parser.add_argument('--output', type=str, default='weights/flytest1080_0710/output', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.2, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.6, help='IOU threshold for NMS')
