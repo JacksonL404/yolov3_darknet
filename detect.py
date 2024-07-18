@@ -4,6 +4,7 @@ from sys import platform
 from models import *  # set ONNX_EXPORT in models.py
 from utils.datasets import *
 from utils.utils import *
+import datetime
 
 
 def detect(save_img=False):
@@ -123,12 +124,41 @@ def detect(save_img=False):
 
                 # Write results
                 for *xyxy, conf, cls in det:
+                    # --------------added by LWQ 20240718-------------------
+                    # Calculate the current frame time in the video
+                    # frame_number = int(vid_cap.get(cv2.CAP_PROP_POS_FRAMES))
+                    # fps = vid_cap.get(cv2.CAP_PROP_FPS)
+                    # frame_time = frame_number / fps
+                    # timestamp = '{:.2f}'.format(frame_time)
+                    # Convert frame_time to 00:00:00.00 format
+                    # frame_time_delta = datetime.timedelta(seconds=frame_time)
+                    # timestamp = str(frame_time_delta)
+
+                    # Extract coordinates and dimensions
+                    x1, y1, x2, y2 = map(int, xyxy)
+                    box_width = x2 - x1
+                    box_height = y2 - y1
+                    x_center = x1 + box_width / 2
+                    y_center = y1 + box_height / 2
+
+                    # Normalize coordinates
+                    img_height, img_width = im0.shape[:2]
+                    # print(img_height, img_width)
+                    x_center /= img_width
+                    y_center /= img_height
+                    box_width /= img_width
+                    box_height /= img_height
+
                     if save_txt:  # Write to file
                         with open(save_path + '.txt', 'a') as file:
-                            file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
+                            # file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
+                            # file.write('%s ' % timestamp + ('%g ' * 6 + '\n') % (*xyxy, cls, conf))
+                            file.write('%d %.6f %.6f %.6f %.6f\n' % (cls, x_center, y_center, box_width, box_height))
 
                     if save_img or view_img:  # Add bbox to image
+                        # ----added by LWQ 20240718------
                         label = '%s %.2f' % (names[int(cls)], conf)
+                        # label = '%s (%d,%d,%d,%d)' % (names[int(cls)], x1, y1, x2, y2)
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
                         # plot_one_box(xyxy, im0, color=colors[int(cls)])
 
@@ -167,13 +197,13 @@ def detect(save_img=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', type=str, default='cfg/yolov3-2cls.cfg', help='*.cfg path')
+    parser.add_argument('--cfg', type=str, default='cfg/firetruck-2cls.cfg', help='*.cfg path')
     parser.add_argument('--names', type=str, default='data/flytest.names', help='*.names path')
-    parser.add_argument('--weights', type=str, default='weights/flytest1080_0710/best.pt', help='weights path')
-    parser.add_argument('--source', type=str, default='D:\GitProjects\yolo_tracking-8.0\datasets/flytest_final', help='source')  # input file/folder, 0 for webcam
-    parser.add_argument('--output', type=str, default='weights/flytest1080_0710/output', help='output folder')  # output folder
+    parser.add_argument('--weights', type=str, default='weights/firetruck_32_1_cls2_4blend/best.pt', help='weights path')
+    parser.add_argument('--source', type=str, default='E:/datasets/output_frames_0718/images', help='source')  # input file/folder, 0 for webcam
+    parser.add_argument('--output', type=str, default='E:/datasets/output_frames_0718/output', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=416, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.2, help='object confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')  # 0.2
     parser.add_argument('--iou-thres', type=float, default=0.6, help='IOU threshold for NMS')
     parser.add_argument('--fourcc', type=str, default='mp4v', help='output video codec (verify ffmpeg support)')
     parser.add_argument('--half', action='store_true', help='half precision FP16 inference')
